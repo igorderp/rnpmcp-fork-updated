@@ -69,7 +69,10 @@ internal static class ComDispatch
     {
         if (value is not null && Marshal.IsComObject(value))
         {
-            Marshal.FinalReleaseComObject(value);
+            // Release this acquisition only. COM can return the same RCW for
+            // nested calls (objects/type information/views); forcing its count
+            // to zero invalidates another still-live owner.
+            _ = Marshal.ReleaseComObject(value);
         }
     }
 
