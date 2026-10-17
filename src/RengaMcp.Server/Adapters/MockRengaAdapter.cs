@@ -2,7 +2,7 @@ using RengaMcp.Models;
 
 namespace RengaMcp.Adapters;
 
-public sealed class MockRengaAdapter : IRengaAdapter
+public sealed partial class MockRengaAdapter : IRengaAdapter
 {
     private static readonly RengaInstanceInfo MockInstance =
         new(4242, "2.46", "!Renga Application, ver: 2.46, pid: 4242");
@@ -75,7 +75,7 @@ public sealed class MockRengaAdapter : IRengaAdapter
             throw new ArgumentOutOfRangeException(nameof(query), "Invalid pagination arguments.");
         }
 
-        var filtered = Objects
+        var filtered = _geometry.Values.Select(item => item.ModelObject)
             .Where(item => string.IsNullOrWhiteSpace(query.TypeId) || string.Equals(item.TypeId, query.TypeId, StringComparison.OrdinalIgnoreCase))
             .Where(item => string.IsNullOrWhiteSpace(query.NameContains) || item.Name.Contains(query.NameContains, StringComparison.OrdinalIgnoreCase))
             .ToArray();
@@ -96,8 +96,7 @@ public sealed class MockRengaAdapter : IRengaAdapter
         CancellationToken cancellationToken = default)
     {
         RequireConnection();
-        var modelObject = Objects.FirstOrDefault(item => string.Equals(item.UniqueId, uniqueId, StringComparison.OrdinalIgnoreCase))
-            ?? throw new KeyNotFoundException($"Mock object {uniqueId} was not found.");
+        var modelObject = GetMockGeometry(uniqueId).ModelObject;
 
         IReadOnlyList<ParameterValue>? parameters = includeParameters
             ? [new("{10000000-0000-0000-0000-000000000001}", "Example.Length", "Высота", 1, 3, true, false, 3200d)]

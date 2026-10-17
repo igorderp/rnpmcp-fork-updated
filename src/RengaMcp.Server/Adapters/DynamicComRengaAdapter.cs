@@ -9,7 +9,7 @@ using RengaMcp.Models;
 
 namespace RengaMcp.Adapters;
 
-public sealed class DynamicComRengaAdapter : IRengaAdapter
+public sealed partial class DynamicComRengaAdapter : IRengaAdapter
 {
     private const string RengaClsid = "{C94A380A-02F2-427B-8FD3-7D6572E16556}";
     private const string RouteTypeId = "{8B323BEE-3882-4744-8838-24F45DF714A9}";
