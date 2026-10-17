@@ -6,7 +6,7 @@ using RengaMcp.Models;
 namespace RengaMcp.Tools;
 
 [McpServerToolType]
-public sealed class RengaTools(IRengaAdapter adapter)
+public sealed partial class RengaTools(IRengaAdapter adapter)
 {
     [McpServerTool(Name = "renga_status", ReadOnly = true, Idempotent = true)]
     [Description("Inspect Renga installation, connection, open-project state, and running instances. Does not launch Renga.")]
