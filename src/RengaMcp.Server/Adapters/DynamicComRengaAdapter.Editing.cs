@@ -129,6 +129,7 @@ public sealed partial class DynamicComRengaAdapter
     // One coherent operation, with an unconditional rollback on validation or COM failure.
     private (T Result, bool UndoRecorded) InEdit<T>(bool preview, Func<object, object, object, T> action)
     {
+        _windowUi.Invalidate();
         var project = RequireComObject(ComDispatch.Get(RequireApplicationWithProject(), "Project"), "project");
         object? model = null; object? objects = null; object? operation = null;
         var started = false; var finished = false;

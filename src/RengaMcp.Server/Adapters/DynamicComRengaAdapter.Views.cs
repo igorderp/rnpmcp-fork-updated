@@ -24,6 +24,7 @@ public sealed partial class DynamicComRengaAdapter
     public Task<ViewState> OpenViewAsync(int? levelId = null, CancellationToken cancellationToken = default) =>
         _worker.InvokeAsync(() =>
         {
+            _windowUi.Invalidate();
             var application = RequireApplicationWithProject();
             var project = RequireComObject(ComDispatch.Get(application, "Project"), "project");
             object? entities = null; object? entity = null; object? view = null;
@@ -81,6 +82,7 @@ public sealed partial class DynamicComRengaAdapter
     public Task<SelectionResult> SelectObjectsAsync(IReadOnlyList<string> uniqueIds, CancellationToken cancellationToken = default) =>
         _worker.InvokeAsync(() =>
         {
+            _windowUi.Invalidate();
             var ids = ValidateObjectIds(uniqueIds, true);
             var application = RequireApplicationWithProject();
             var project = RequireComObject(ComDispatch.Get(application, "Project"), "project");

@@ -198,6 +198,7 @@ public sealed partial class DynamicComRengaAdapter : IRengaAdapter
 
     private PipeConnectionResult CreatePipeConnectionCore(PipeConnectionRequest request)
     {
+        _windowUi.Invalidate();
         RequireConnectorApi();
         ValidatePipeConnectionRequest(request);
         var category = CreationCatalog.GetSystemCategory(request.SystemCategory);
@@ -413,6 +414,7 @@ public sealed partial class DynamicComRengaAdapter : IRengaAdapter
 
     private CreateObjectResult CreateObjectCore(CreateObjectRequest request)
     {
+        _windowUi.Invalidate();
         if (!Guid.TryParse(request.TypeId, out var typeId))
         {
             throw new ArgumentException("type_id must be a GUID.", nameof(request));
@@ -512,6 +514,7 @@ public sealed partial class DynamicComRengaAdapter : IRengaAdapter
         string value,
         bool preview)
     {
+        _windowUi.Invalidate();
         if (!Guid.TryParse(objectUniqueId, out var objectId) || !Guid.TryParse(parameterId, out var parsedParameterId))
         {
             throw new ArgumentException("object_unique_id and parameter_id must be GUIDs.");
@@ -1307,6 +1310,7 @@ public sealed partial class DynamicComRengaAdapter : IRengaAdapter
 
     private void DisconnectCore()
     {
+        _windowUi.Invalidate();
         if (_application is not null)
         {
             ComDispatch.Release(_application);

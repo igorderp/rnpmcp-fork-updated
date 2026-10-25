@@ -89,7 +89,8 @@ public sealed partial class DynamicComRengaAdapter
         }
         finally { ComDispatch.Release(baselineObject); }
         return new ObjectGeometry(ReadObjectSummary(modelObject), "mm", placement, levelId, levelElevation,
-            placementElevation, offset, elevation, baseline, missing, ReadDependentIds(modelObject));
+            placementElevation, offset, elevation, baseline, missing, ReadDependentIds(modelObject),
+            Guid.Parse(ComDispatch.Get<string>(modelObject, "ObjectTypeS")) == Guid.Parse(CreationCatalog.Types[0].TypeId) ? ReadLevel(modelObject) : null);
     }
 
     private static Placement3DValue ReadPlacement(object placement) => new(

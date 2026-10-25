@@ -4,6 +4,10 @@ namespace RengaMcp.Adapters;
 
 public interface IRengaAdapter : IDisposable
 {
+    Task<IReadOnlyList<LevelInfo>> GetLevelsAsync(CancellationToken cancellationToken = default);
+    Task<MoveObjectsResult> MoveObjectsAsync(IReadOnlyList<string> uniqueIds, Point3DValue translationMm, bool preview = true, CancellationToken cancellationToken = default);
+    Task<WindowSnapshot> GetUiSnapshotAsync(CancellationToken cancellationToken = default);
+    Task<UiInputResult> SendUiInputAsync(UiInputRequest request, CancellationToken cancellationToken = default);
     Task<ObjectGeometry> GetObjectGeometryAsync(string uniqueId, int samples = 16, CancellationToken cancellationToken = default);
     Task<GeometryWriteResult> CreateObjectAtAsync(CreateGeometryRequest request, CancellationToken cancellationToken = default);
     Task<GeometryWriteResult> SetObjectPlacementAsync(string uniqueId, Placement3DValue placement, bool preview = true, CancellationToken cancellationToken = default);
