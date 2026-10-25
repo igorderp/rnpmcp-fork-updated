@@ -1,6 +1,6 @@
 # Неофициальный MCP-сервер для Renga
 
-[![CI](https://github.com/igorderp/rnpmcp/actions/workflows/ci.yml/badge.svg)](https://github.com/igorderp/rnpmcp/actions/workflows/ci.yml)
+[![CI](https://github.com/igorderp/rnpmcp-fork-updated/actions/workflows/ci.yml/badge.svg)](https://github.com/igorderp/rnpmcp-fork-updated/actions/workflows/ci.yml)
 [![Лицензия: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Локальный MCP-сервер для подключения ИИ-агента к открытому проекту в **Renga BIM**.
@@ -9,7 +9,9 @@
 
 Сервер находит уже запущенную Renga через Windows Running Object Table (ROT), читает модель и предоставляет ограниченный набор безопасных операций записи. Он не запускает Renga самостоятельно, не открывает и не сохраняет проекты и не закрывает приложение.
 
-> В этом форке версия 0.3.0 добавляет архитектурную геометрию, создание объектов по координатам, лестницы, управление выбором/видами и PNG модельного вида через API Renga. Подробности и границы проверки — в [ARCHITECTURE.md](ARCHITECTURE.md).
+> Версия **0.4.0** добавляет нативное копирование объектов и уровней, управление окном Renga через MCP, чтение отметок уровней и пакетный сдвиг объектов. Изменение высоты уровня выполняется штатной ручкой и динамическим вводом Renga. Инструкции, различия preview и границы проверки — в [NATIVE_UI.md](NATIVE_UI.md).
+
+> Версия 0.3.0 добавляет архитектурную геометрию, создание объектов по координатам, лестницы, управление выбором/видами и PNG модельного вида через API Renga. Подробности и границы проверки — в [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Возможности
 
@@ -42,7 +44,7 @@
 ### 1. Клонирование и сборка
 
 ```powershell
-git clone https://github.com/igorderp/rnpmcp.git
+git clone https://github.com/igorderp/rnpmcp-fork-updated.git
 cd .\rnpmcp
 dotnet build .\src\RengaMcp.Server\RengaMcp.Server.csproj -c Release
 ```
@@ -98,6 +100,12 @@ enabled = true
 | `renga_create_object` | Создание одного объекта | Да |
 | `renga_set_parameter` | Изменение одного параметра | Да |
 | `renga_create_pipe_connection` | Трубное соединение между портами через инженерный коннектор | Да |
+| `renga_get_levels` | Уровни, точные отметки и доступность записи через API | Нет |
+| `renga_move_objects` | Пакетный сдвиг объектов X/Y/Z с preview и undo | Да |
+| `renga_ui_snapshot` | PNG окна с панелями и координатами для UI-ввода | Только фокус окна |
+| `renga_ui_key` | Ctrl+C/Ctrl+V, создание копии, перемещение и навигация | Штатная UI-команда |
+| `renga_ui_click` | Щелчок по свежему UI-снимку, включая Ctrl+ручку уровня | UI-ввод |
+| `renga_ui_type_text` | Unicode в поле Renga, в том числе динамическое поле высоты | UI-ввод |
 | `renga_get_geometry` | Положение, уровень, отметки, базовая линия/контур и зависимые объекты | Нет |
 | `renga_create_object_at` | Объект по координатам с контуром и параметрами в одной операции | Да |
 | `renga_set_placement` | Положение существующего объекта относительно уровня | Да |
@@ -118,7 +126,7 @@ enabled = true
 
 ## Безопасная запись
 
-Инструменты записи в модель по умолчанию получают `preview=true`:
+Для нативных UI-команд preview означает план без ввода и без транзакционного rollback; подробности в [NATIVE_UI.md](NATIVE_UI.md). API-инструменты записи в модель по умолчанию получают `preview=true`:
 
 - операция реально выполняется в Renga;
   - проверяются доступные до Apply данные; вычисление некоторых параметров Renga откладывает до Apply;

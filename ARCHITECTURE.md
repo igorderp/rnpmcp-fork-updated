@@ -1,6 +1,8 @@
 # Архитектурные инструменты 0.3.0
 
-Форк: https://github.com/igorderp/rnpmcp. Исходный проект: https://github.com/proovcme/rnpmcp.
+Для добавленных в 0.4.0 нативных копирования/перемещения и изменения отметки уровня см. [NATIVE_UI.md](NATIVE_UI.md). Число инструментов в текущей версии — 31; приведённые ниже 25 относятся к версии 0.3.0.
+
+Форк: https://github.com/igorderp/rnpmcp-fork-updated. Исходный проект: https://github.com/proovcme/rnpmcp.
 
 ## Что добавлено
 
