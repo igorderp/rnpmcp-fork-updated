@@ -22,7 +22,8 @@ public sealed record ObjectGeometry(
     double? ElevationAboveLevel,
     Curve2DValue? Baseline,
     IReadOnlyList<string> Unavailable,
-    IReadOnlyList<int>? DependentObjectIds = null);
+    IReadOnlyList<int>? DependentObjectIds = null,
+    LevelInfo? OwnLevel = null);
 
 public sealed record ParameterAssignment(string ParameterId, string Value);
 
