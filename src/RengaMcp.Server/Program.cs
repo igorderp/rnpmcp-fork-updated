@@ -27,12 +27,13 @@ builder.Services.AddSingleton<IRengaAdapter>(services =>
 builder.Services
     .AddMcpServer(options =>
     {
-        options.ServerInfo = new() { Name = "renga-mcp", Version = "0.3.0" };
+        options.ServerInfo = new() { Name = "renga-mcp", Version = "0.4.0" };
         options.ServerInstructions =
             "Access a running Renga BIM instance. Connect before reading or writing a project. " +
             "Write tools preview and roll back by default; explicit preview=false is required to commit. " +
             "Read renga_get_geometry before architectural edits: baselines are object-local, creation placement is global. " +
             "renga_get_screenshot captures the model viewport through Renga, not desktop UI coordinates. " +
+            "Native copy/paste, level elevation editing and native object moves use renga_ui_snapshot/key/click/type_text. UI preview only plans; it cannot roll back inputs. Use fresh UI snapshot IDs, inspect every result and verify completed edits by re-reading objects/levels. " +
             "Inspect engineering ports and compatible styles before creating MEP connections. " +
             "Never infer regulatory compliance or design quality from successful API calls alone. " +
             "Results may be paginated or truncated.";
