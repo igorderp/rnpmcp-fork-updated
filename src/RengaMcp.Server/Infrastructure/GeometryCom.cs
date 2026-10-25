@@ -70,11 +70,17 @@ internal static class GeometryCom
 
     public static object CreateUndoOperation(object project, object model)
     {
-        using var idMethod = Resolve(model, "Id", INVOKEKIND.INVOKE_PROPERTYGET);
-        Marshal.ThrowExceptionForHR(idMethod.As<GuidOut>()(idMethod.Instance, out var id));
+        var id = GetModelId(model);
         using var create = Resolve(project, "CreateOperationWithUndo", INVOKEKIND.INVOKE_FUNC);
         Marshal.ThrowExceptionForHR(create.As<GuidObjectOut>()(create.Instance, id, out var result));
         return Wrap(result);
+    }
+
+    public static Guid GetModelId(object model)
+    {
+        using var method = Resolve(model, "Id", INVOKEKIND.INVOKE_PROPERTYGET);
+        Marshal.ThrowExceptionForHR(method.As<GuidOut>()(method.Instance, out var id));
+        return id;
     }
 
     public static object CreateScreenshotSettings(object view)
