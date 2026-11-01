@@ -64,7 +64,8 @@ public sealed class RengaConnectionSession(
     public void Refresh()
     {
         try { _ = EnsureConnected(); }
-        catch (Exception error) when (error is InvalidOperationException || ComFailures.Unwrap(error) is System.Runtime.InteropServices.COMException)
+        catch (Exception error) when (error is InvalidOperationException || ComFailures.IsDisconnected(error)
+            || ComFailures.Unwrap(error) is System.Runtime.InteropServices.COMException)
         { Message = ComFailures.Describe(error); }
     }
 
@@ -79,7 +80,7 @@ public sealed class RengaConnectionSession(
         var candidate = attach(selected.ProcessId);
         bool project;
         try { project = hasProject(candidate); }
-        catch { release(candidate); throw; }
+        catch { Release(candidate); throw; }
         Drop();
         Application = candidate; Instance = selected; HasProject = project;
         ExplicitProcessId = explicitPid; AutoConnectEnabled = true;
@@ -94,7 +95,13 @@ public sealed class RengaConnectionSession(
         invalidated?.Invoke();
         var old = Application;
         Application = null; Instance = null; HasProject = null;
-        if (old is not null) release(old);
+        if (old is not null) Release(old);
+    }
+
+    private void Release(object app)
+    {
+        try { release(app); }
+        catch (System.Runtime.InteropServices.InvalidComObjectException) { /* Already invalidated: nothing remains to release. */ }
     }
 
     private static RengaInstanceInfo Select(IReadOnlyList<RengaInstanceInfo> instances, int? processId)
