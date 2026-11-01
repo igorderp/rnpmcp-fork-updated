@@ -13,7 +13,9 @@ public sealed record RengaStatus(
     bool Connected,
     int? ConnectedProcessId,
     bool? HasProject,
-    IReadOnlyList<RengaInstanceInfo> RunningInstances);
+    IReadOnlyList<RengaInstanceInfo> RunningInstances,
+    string? ConnectionMessage = null,
+    bool AutoConnectEnabled = false);
 
 public sealed record ConnectionResult(
     bool Connected,
