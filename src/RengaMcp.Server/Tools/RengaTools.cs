@@ -19,7 +19,7 @@ public sealed partial class RengaTools(IRengaAdapter adapter)
         adapter.ListInstancesAsync(cancellationToken);
 
     [McpServerTool(Name = "renga_connect", ReadOnly = true, Idempotent = true)]
-    [Description("Attach to an already running Renga instance. Omit process_id to select the first instance. Never launches or closes Renga.")]
+    [Description("Attach to an already running Renga instance. Reuses a healthy connection. With no connection, omit processId only when exactly one Renga is running; multiple instances require an explicit processId. Never launches or closes Renga.")]
     public Task<ConnectionResult> Connect(
         [Description("Optional Renga process ID returned by renga_list_instances.")] int? processId = null,
         CancellationToken cancellationToken = default) =>
