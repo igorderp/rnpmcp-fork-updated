@@ -15,13 +15,15 @@ public sealed partial class DynamicComRengaAdapter : IRengaAdapter
     private const string RouteTypeId = "{8B323BEE-3882-4744-8838-24F45DF714A9}";
     private readonly ILogger<DynamicComRengaAdapter> _logger;
     private readonly StaWorker _worker = new("Renga MCP COM STA");
-    private object? _application;
-    private RengaInstanceInfo? _connectedInstance;
+    private readonly RengaConnectionSession _connection;
+    private RengaInstanceInfo? ConnectedInstance => _connection.Instance;
     private bool _disposed;
 
     public DynamicComRengaAdapter(ILogger<DynamicComRengaAdapter> logger)
     {
         _logger = logger;
+        _connection = new(RunningObjectTable.ListRengaInstances, RunningObjectTable.GetRengaApplication,
+            ReadHasProject, ComDispatch.Release, _windowUi.Invalidate);
     }
 
     public Task<RengaStatus> GetStatusAsync(CancellationToken cancellationToken = default) =>
@@ -30,17 +32,19 @@ public sealed partial class DynamicComRengaAdapter : IRengaAdapter
             {
                 var installation = DetectInstallation();
                 var instances = RunningObjectTable.ListRengaInstances();
-                bool? hasProject = _application is null ? null : ReadHasProject(_application);
+                _connection.Refresh();
 
                 return new RengaStatus(
                     "com",
                     installation.Installed,
                     installation.Path,
                     installation.Version,
-                    _application is not null,
-                    _connectedInstance?.ProcessId,
-                    hasProject,
-                    instances);
+                    _connection.Application is not null,
+                    ConnectedInstance?.ProcessId,
+                    _connection.HasProject,
+                    instances,
+                    _connection.Message,
+                    _connection.AutoConnectEnabled);
             },
             cancellationToken);
 
@@ -54,39 +58,9 @@ public sealed partial class DynamicComRengaAdapter : IRengaAdapter
         _worker.InvokeAsync(
             () =>
             {
-                DisconnectCore();
-                var instances = RunningObjectTable.ListRengaInstances();
-                var selected = processId is null
-                    ? (instances.Count == 0 ? null : instances[0])
-                    : instances.FirstOrDefault(instance => instance.ProcessId == processId);
-
-                if (selected is null)
-                {
-                    throw new InvalidOperationException(
-                        processId is null
-                            ? "Renga is installed but no running instance is available. Start Renga and open a project first."
-                            : $"No running Renga instance with PID {processId} is available.");
-                }
-
-                _application = RunningObjectTable.GetRengaApplication(selected.ProcessId);
-                _connectedInstance = selected;
-                try
-                {
-                    var hasProject = ReadHasProject(_application);
-                    _logger.LogInformation("Connected to Renga PID {ProcessId}, API {ApiVersion}", selected.ProcessId, selected.ApiVersion);
-
-                    return new ConnectionResult(
-                        true,
-                        selected.ProcessId,
-                        selected.ApiVersion,
-                        hasProject,
-                        hasProject ? "Connected to Renga." : "Connected to Renga, but no project is open.");
-                }
-                catch
-                {
-                    DisconnectCore();
-                    throw;
-                }
+                var result = _connection.Connect(processId);
+                _logger.LogInformation("Connected to Renga PID {ProcessId}, API {ApiVersion}", result.ProcessId, result.ApiVersion);
+                return result;
             },
             cancellationToken);
 
@@ -954,7 +928,8 @@ public sealed partial class DynamicComRengaAdapter : IRengaAdapter
 
     private void RequireConnectorApi()
     {
-        var versionText = _connectedInstance?.ApiVersion
+        _ = RequireApplicationWithProject();
+        var versionText = ConnectedInstance?.ApiVersion
             ?? throw new InvalidOperationException("Not connected to Renga. Call renga_connect first.");
         if (!Version.TryParse(versionText, out var version) || version < new Version(2, 47))
         {
@@ -1290,34 +1265,15 @@ public sealed partial class DynamicComRengaAdapter : IRengaAdapter
             ComDispatch.Get<string>(modelObject, "Name"),
             ComDispatch.Get<bool>(modelObject, "Pinned"));
 
-    private object RequireApplicationWithProject()
-    {
-        if (_application is null)
-        {
-            throw new InvalidOperationException("Not connected to Renga. Call renga_connect first.");
-        }
-
-        if (!ReadHasProject(_application))
-        {
-            throw new InvalidOperationException("The connected Renga instance has no open project.");
-        }
-
-        return _application;
-    }
+    private object RequireApplicationWithProject() => _connection.RequireProject();
 
     private static bool ReadHasProject(object application) =>
         ComDispatch.Call<bool>(application, "HasProject");
 
     private void DisconnectCore()
     {
-        _windowUi.Invalidate();
-        if (_application is not null)
-        {
-            ComDispatch.Release(_application);
-            _application = null;
-            _connectedInstance = null;
-            _logger.LogInformation("Disconnected from Renga without closing the application.");
-        }
+        _connection.Disconnect();
+        _logger.LogInformation("Disconnected from Renga without closing the application.");
     }
 
     private static (bool Installed, string? Path, string? Version) DetectInstallation()

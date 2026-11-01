@@ -142,7 +142,7 @@ public sealed partial class DynamicComRengaAdapter
             view = ComDispatch.Get(app, "ActiveView");
             var context = GeometryCom.GetModelId(model).ToString("B") + ":" + (view is null ? "none" : ComDispatch.Get<int>(view, "Id"));
             return (new IntPtr(ComDispatch.Call<int>(app, "GetMainWindowHandle")),
-                _connectedInstance?.ProcessId ?? throw new InvalidOperationException("Renga process is unknown."), context);
+                ConnectedInstance?.ProcessId ?? throw new InvalidOperationException("Renga process is unknown."), context);
         }
         finally { ComDispatch.Release(view); ComDispatch.Release(model); ComDispatch.Release(project); }
     }
