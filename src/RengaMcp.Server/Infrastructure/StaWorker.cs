@@ -40,10 +40,19 @@ internal sealed class StaWorker : IDisposable
 
     private void Run()
     {
-        foreach (var item in _queue.GetConsumingEnumerable())
+        ComMessageFilter? filter = null;
+        try
         {
-            item.Execute();
+            try { filter = new ComMessageFilter(); }
+            catch (Exception error)
+            { Console.Error.WriteLine($"Renga COM busy-call filter unavailable: {ComFailures.Describe(error)}"); }
+            while (!_queue.IsCompleted)
+            {
+                if (_queue.TryTake(out var item, 50)) item.Execute();
+                ComMessageFilter.PumpMessages();
+            }
         }
+        finally { filter?.Dispose(); _queue.Dispose(); }
     }
 
     public void Dispose()
@@ -56,7 +65,6 @@ internal sealed class StaWorker : IDisposable
         _disposed = true;
         _queue.CompleteAdding();
         _thread.Join(TimeSpan.FromSeconds(5));
-        _queue.Dispose();
     }
 
     private interface IWorkItem
